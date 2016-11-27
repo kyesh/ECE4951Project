@@ -28,6 +28,7 @@ int main(int argc, char** argv )
             string imgPath(directory + ent->d_name);
             cout << imgPath << endl;
             img = imread(imgPath);
+            //Checks if there is valid image data
             if ( !img.data )
             {
                 printf("Not a valid image \n");
@@ -35,7 +36,7 @@ int main(int argc, char** argv )
                 namedWindow("Display Image", WINDOW_NORMAL );
                 imshow("Display Image", img);
             
-                waitKey(0);
+                waitKey(0);//Wait until user presses key to continue
             }
         }
         closedir (dir);
