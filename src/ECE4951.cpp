@@ -16,7 +16,7 @@ int computeWhiteness(int b,int g,int r){
       bdif = abs(mean-b);
       gdif = abs(mean-g);
       rdif = abs(mean-r);
-      returnVal = (mean - bdif - rdif -bdif);
+      returnVal = (mean - 4*bdif - 4*rdif - 4*bdif);
       if(returnVal < 0){
           return 0;
       } else {
@@ -34,12 +34,12 @@ int computeWhiteness(int b,int g,int r){
 
 int computeGreeness(int b,int g,int r){
 
-      int thresh = 80;
+      int thresh = 120;
       int returnVal;
 
       if(g > thresh){
        
-      returnVal = (g - 2*(b+r));
+      returnVal = (g - .5*(b+r));
       if(returnVal < 0){
           return 0;
       } else{
