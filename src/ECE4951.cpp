@@ -100,7 +100,7 @@ int main(int argc, char** argv )
         return -1;
     }
 
-    cv::Mat img;
+    cv::Mat img, img_w, img_g;
     DIR *dir;
 
     dir = opendir(argv[1]);
@@ -143,11 +143,21 @@ int main(int argc, char** argv )
             {
                 printf("Not a valid image \n");
             } else {
-                string outputPath(outdirectory + "SomeQualifier_"  + imgName);
+//                string outputPath(outdirectory + "SomeQualifier_"  + imgName);
                 cv::namedWindow("Display Image", cv::WINDOW_NORMAL );
+                cv::namedWindow("White Image", cv::WINDOW_NORMAL );
+                cv::namedWindow("Green Image", cv::WINDOW_NORMAL );
+
+                CreateNessImage(img, img_w, computeWhiteness);
+                CreateNessImage(img, img_g, computeGreeness);
+
                 cv::imshow("Display Image", img);
-                cout << outputPath << endl;
-		cv::imwrite(outputPath, img);            
+                cv::imshow("White Image", img_w);
+                cv::imshow("Green Image", img_g);
+                cout << outdirectory + "SomeQualifier_"  + imgName << endl;
+		cv::imwrite(outdirectory + "Original_"  + imgName, img);
+                cv::imwrite(outdirectory + "White_"  + imgName, img_w);
+                cv::imwrite(outdirectory + "Green_"  + imgName, img_g);            
                 cv::waitKey(0);//Wait until user presses key to continue
             }
         }
