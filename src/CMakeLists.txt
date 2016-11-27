@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( ECE4951.cpp )
+find_package( OpenCV REQUIRED )
+add_executable( ECE4951 ECE4951.cpp )
+target_link_libraries( ECE4951 ${OpenCV_LIBS} )
