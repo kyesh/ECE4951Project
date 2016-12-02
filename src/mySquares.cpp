@@ -1,13 +1,35 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <opencv2/opencv.hpp>
-#include<dirent.h>
-#include<string.h>
+// The "Square Detector" program.
+// It loads several images sequentially and tries to find squares in
+// each image
 
-using namespace cv; //supectting name space issue with abs
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/highgui/highgui.hpp"
+
+#include <iostream>
+#include <math.h>
+#include <string.h>
+
+using namespace cv;
 using namespace std;
 
-//Stark Mike Code
+static void help()
+{
+    cout <<
+    "\nA program using pyramid scaling, Canny, contours, contour simpification and\n"
+    "memory storage (it's got it all folks) to find\n"
+    "squares in a list of images pic1-6.png\n"
+    "Returns sequence of squares detected on the image.\n"
+    "the sequence is stored in the specified memory storage\n"
+    "Call:\n"
+    "./squares\n"
+    "Using OpenCV version %s\n" << CV_VERSION << "\n" << endl;
+}
+
+
+int thresh = 50, N = 11;
+const char* wndname = "Square Detection Demo";
 
 // helper function:
 // finds a cosine of angle between vectors
@@ -132,169 +154,30 @@ static void drawSquares( Mat& image, const vector<vector<Point> >& squares )
 }
 
 
-//End Mike Code
-
-//Start Ken Code
-int computeWhiteness(int b,int g,int r){
-    int thresh = 125;
-    int mean, bdif, gdif, rdif, returnVal;
-    if(b > thresh && g > thresh && r > thresh){
-       
-      mean = (b + g + r)/3;
-      bdif = abs(mean-b);
-      gdif = abs(mean-g);
-      rdif = abs(mean-r);
-      returnVal = (mean - 4*bdif - 4*rdif - 4*bdif);
-      if(returnVal < 0){
-          return 0;
-      } else {
-          return returnVal;
-      }
- 
-       
-    } else {
-
-       return 0 ; 
-       //Not really white probably like a gray at this point
-
-    }
-}
-
-int computeGreeness(int b,int g,int r){
-
-      int thresh = 120;
-      int returnVal;
-
-      if(g > thresh){
-       
-      returnVal = (g - .5*(b+r));
-      if(returnVal < 0){
-          return 0;
-      } else{
-          return returnVal;
-      }
- 
-       
-      } else {
-
-      return 0;
- 
-      }      
-       
-}
-
-
-int CreateNessImage(Mat& src, Mat& dst, int (*nessFunction)(int, int, int))
+int main(int /*argc*/, char** /*argv*/)
 {
-    // accept only char type matrices
-    CV_Assert(src.depth() == CV_8U);
-    
-    dst.create(src.size(), src.depth());
+    static const char* names[] = { "../data/20161111_082924.jpg", "../data/pic1.png", "../data/pic2.png", "../data/pic3.png",
+        "../data/pic4.png", "../data/pic5.png", "../data/pic6.png", 0 };
+    help();
+    namedWindow( wndname, 1 );
+    vector<vector<Point> > squares;
 
-    const int channels = src.channels();
-//    switch(channels)
-//    {
-//    case 1:
-//        {
-//            MatIterator_<uchar> it, end;
-//            for( it = I.begin<uchar>(), end = I.end<uchar>(); it != end; ++it)
-//                *it = table[*it];
-//            break;
-//        }
-//    case 3:
-//        {
-            MatIterator_<Vec3b> it_s, end_s;
-            MatIterator_<uchar> it_d, end_d;
-            it_d = dst.begin<uchar>();
-            for( it_s = src.begin<Vec3b>(), end_s = src.end<Vec3b>(), 
-                 it_d = dst.begin<uchar>(), end_d = dst.end<uchar>(); 
-                 it_s != end_s && it_d != end_d;
-                 ++it_s, ++it_d)
-            {
-                *it_d = nessFunction( (*it_s)[0] , (*it_s)[1] , (*it_s)[2] );
-            }
-//        }
-//    }
-
-    return 0;
-}
-
-int main(int argc, char** argv )
-{
-    //Check Arguments
-    if ( argc != 3 )
+    for( int i = 0; names[i] != 0; i++ )
     {
-        printf("usage: ECE4951 <Image_Folder_Path> <Output_Folder_Path>\n");
-        return -1;
-    }
-
-    cv::Mat img, img_w, img_g;
-    DIR *dir;
-
-    dir = opendir(argv[1]);
-    struct dirent *ent;
-    string indirectory(argv[1]);
-    string outdirectory(argv[2]);
-    cout << "Before Table Creation" << endl;
-    //Create Tables. Compute values upfront so you don't need to compute them on every itteration.
-//    uchar whitePassFilter[256][256][256]; //Apparently these exceed the stack memory need to try something using CV Mat or malloc latter
-//    uchar greenPassFilter[256][256][256];
-/*    cout << "Before loops" << endl;
-    for(int b = 0; b < 256; b++){
-
-        for(int g = 0; g < 256; g++){
-
-            for(int r = 0 ; r < 256; r++){
-
-//                whitePassFilter[b][g][r] = (uchar)computeWhiteness(b,g,r);
-//                greenPassFilter[b][g][r] = (uchar)computeGreeness(b,g,r);
-
-
-            }
-
-
+        Mat image = imread(names[i], 1);
+        if( image.empty() )
+        {
+            cout << "Couldn't load " << names[i] << endl;
+            continue;
         }
 
-    }*/
-    cout << "After loops" << endl;
-    if(dir != NULL){
+        findSquares(image, squares);
+        drawSquares(image, squares);
 
-        //Loops Through and loads every image in the directory to img.
-        while ((ent = readdir (dir)) != NULL) {
-            string imgName(ent->d_name);
-            string imgPath(indirectory + imgName);
-            cout << imgPath << endl;
-            cout << img.depth() << endl;
-            img = cv::imread(imgPath);
-            //Checks if there is valid image data
-            if ( !img.data )
-            {
-                printf("Not a valid image \n");
-            } else {
-//                string outputPath(outdirectory + "SomeQualifier_"  + imgName);
-                cv::namedWindow("Display Image", cv::WINDOW_NORMAL );
-                cv::namedWindow("White Image", cv::WINDOW_NORMAL );
-                cv::namedWindow("Green Image", cv::WINDOW_NORMAL );
-
-                CreateNessImage(img, img_w, computeWhiteness);
-                CreateNessImage(img, img_g, computeGreeness);
-
-                cv::imshow("Display Image", img);
-                cv::imshow("White Image", img_w);
-                cv::imshow("Green Image", img_g);
-                cout << outdirectory + "SomeQualifier_"  + imgName << endl;
-		cv::imwrite(outdirectory + "Original_"  + imgName, img);
-                cv::imwrite(outdirectory + "White_"  + imgName, img_w);
-                cv::imwrite(outdirectory + "Green_"  + imgName, img_g);            
-                cv::waitKey(0);//Wait until user presses key to continue
-            }
-        }
-        closedir (dir);
-    } else {
-        cout << "Could not find dir" << argv[1] << endl;
+        int c = waitKey();
+        if( (char)c == 27 )
+            break;
     }
-    
 
     return 0;
 }
-
