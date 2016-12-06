@@ -1,8 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <opencv2/opencv.hpp>
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+//#include "opencv2/imgcodecs.hpp"
+#include "opencv2/highgui/highgui.hpp"
+
 #include<dirent.h>
 #include<string.h>
+#include <math.h>
 
 using namespace cv; //supectting name space issue with abs
 using namespace std;
@@ -38,6 +45,8 @@ static void findSquares( const Mat& image, vector<vector<Point> >& squares )
     for( int c = 0; c < 3; c++ )
     {
         int ch[] = {c, 0};
+        int N = 11;//Number of levels for edge detection
+        int thresh = 50;
         mixChannels(&timg, 1, &gray0, 1, ch, 1);// copies specified channels from input array to output array
 	//timg is source array, 1=number of matricies in timg
 	//gray0=destination array, 1=number of matricies in gray0
@@ -124,11 +133,11 @@ static void drawSquares( Mat& image, const vector<vector<Point> >& squares )
     {
         const Point* p = &squares[i][0];
         int n = (int)squares[i].size();
-        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, LINE_AA);
+        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, 16);
     }
 
-    imshow(wndname, image);
-    imwrite("../savedImages/squareImages.jpg",image);
+    //imshow(wndname, image);
+    //imwrite("../savedImages/squareImages.jpg",image);
 }
 
 
@@ -165,9 +174,9 @@ int computeGreeness(int b,int g,int r){
       int thresh = 120;
       int returnVal;
 
-      if(g > thresh){
+      if(g > thresh && b < .9*g && r < g){
        
-      returnVal = (g - .5*(b+r));
+      returnVal = (g);
       if(returnVal < 0){
           return 0;
       } else{
@@ -228,6 +237,8 @@ int main(int argc, char** argv )
         return -1;
     }
 
+    vector<vector<Point> > squares; //Create list of squares
+
     cv::Mat img, img_w, img_g;
     DIR *dir;
 
@@ -278,6 +289,9 @@ int main(int argc, char** argv )
 
                 CreateNessImage(img, img_w, computeWhiteness);
                 CreateNessImage(img, img_g, computeGreeness);
+		
+//                findSquares(img, squares);
+//                drawSquares(img, squares);
 
                 cv::imshow("Display Image", img);
                 cv::imshow("White Image", img_w);
