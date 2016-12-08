@@ -12,6 +12,7 @@ std::vector<cv::Point> findOpenSpots(cv::Mat& img , int showPhotos, int savePhot
                 std::vector<std::vector<cv::Point> > contours;
                 std::vector<cv::Vec4i> hier;           
  
+/* Works for Nate Images
                 //Element for Erosion and Dialation Operator
                 int erosion_size = 40;
                 cv::Mat elementE = cv::getStructuringElement( cv::MORPH_RECT,
@@ -22,6 +23,16 @@ std::vector<cv::Point> findOpenSpots(cv::Mat& img , int showPhotos, int savePhot
                                                    cv::Size( 2*erosion_size + 1, 2*erosion_size+1 ),
                                                    cv::Point( erosion_size, erosion_size ) );
             
+*/
+
+                int erosion_size = 7;
+                cv::Mat elementE = cv::getStructuringElement( cv::MORPH_RECT,
+                                                   cv::Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                                   cv::Point( erosion_size, erosion_size ) );
+                erosion_size = 1;
+                cv::Mat elementD = cv::getStructuringElement( cv::MORPH_RECT,
+                                                   cv::Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                                   cv::Point( erosion_size, erosion_size ) );
 
 
 

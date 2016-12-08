@@ -50,7 +50,7 @@ int main(int argc, char** argv )
                 printf("Not a valid image \n");
             } else {
                 cout << "Image is " << img.rows << "x" << img.cols << endl;
-                spots = findOpenSpots(img , 0, 1, outdirectory, imgName);
+                spots = findOpenSpots(img , 1, 1, outdirectory, imgName);
 
                 cout << spots.size()  <<" Open Spots Found" << endl;
                 for(int i = 0; i < spots.size(); i++){
