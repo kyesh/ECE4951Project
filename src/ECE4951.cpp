@@ -43,14 +43,13 @@ int main(int argc, char** argv )
             string imgName(ent->d_name);
             string imgPath(indirectory + imgName);
             cout << imgPath << endl;
-            cout << img.depth() << endl;
             img = cv::imread(imgPath);
             //Checks if there is valid image data
             if ( !img.data )
             {
                 printf("Not a valid image \n");
             } else {
-
+                cout << "Image is " << img.rows << "x" << img.cols << endl;
                 spots = findOpenSpots(img , 0, 1, outdirectory, imgName);
 
                 cout << spots.size()  <<" Open Spots Found" << endl;
