@@ -94,16 +94,25 @@ int main(int argc, char** argv )
                 cv::namedWindow("Eroded Green Image", cv::WINDOW_NORMAL );
                 cv::namedWindow("Dialated1 Green Image", cv::WINDOW_NORMAL );
 //                cv::namedWindow("Dialated2 Green Image", cv::WINDOW_NORMAL );
-                cv::namedWindow("Canny", cv::WINDOW_NORMAL );
+//                cv::namedWindow("Canny", cv::WINDOW_NORMAL );
 
                 CreateNessImage(img, img_w, computeWhiteness);
                 CreateNessImage(img, img_g, computeGreeness);
                 dilate( img_g, img_gD1, elementD );
          	erode( img_gD1, img_gE, elementE );
-                Canny( img_gE, canny, 50, 150, 3 );//Canny is unessary we could use img_gE directly
-                findContours(canny.clone(), contours, hier, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-
+//                Canny( img_gE, canny, 50, 150, 3 );//Canny is unessary we could use img_gE directly
+                findContours(img_gE.clone(), contours, hier, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+                
                 drawContours(img, contours, -1, Scalar( 0, 0, 255) );
+                
+                Moments M;
+                for(int i = 0; i < contours.size(); i++){
+
+		    M = moments(contours[i]);
+
+                    circle(img, Point(int(M.m10/M.m00),int(M.m01/M.m00)), 25, Scalar(255, 0, 0), -1);
+
+                }
 
 //                dilate( img_gE, img_gD2, elementE );
 //                findSquares(img, squares);
@@ -114,7 +123,7 @@ int main(int argc, char** argv )
                 cv::imshow("Green Image", img_g);
                 cv::imshow("Eroded Green Image", img_gE);
                 cv::imshow("Dialated1 Green Image", img_gD1);
-                cv::imshow("Canny", canny);
+//                cv::imshow("Canny", canny);
 
 //                cv::imshow("Dialated2 Green Image", img_gD2);
 
@@ -125,7 +134,7 @@ int main(int argc, char** argv )
                 cv::imwrite(outdirectory + "Green_"  + imgName, img_g);
                 cv::imwrite(outdirectory + "GreenE_"  + imgName, img_gE);
                 cv::imwrite(outdirectory + "GreenD1_"  + imgName, img_gD1);
-                cv::imwrite(outdirectory + "Canny_"  + imgName, canny);
+//                cv::imwrite(outdirectory + "Canny_"  + imgName, canny);
 
 //                cv::imwrite(outdirectory + "GreenD2_"  + imgName, img_gD2);
             
