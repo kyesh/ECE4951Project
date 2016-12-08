@@ -100,10 +100,10 @@ int main(int argc, char** argv )
                 CreateNessImage(img, img_g, computeGreeness);
                 dilate( img_g, img_gD1, elementD );
          	erode( img_gD1, img_gE, elementE );
-                Canny( img_gE, canny, 50, 150, 3 );
-//                findContours(canny, contours, hier, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+                Canny( img_gE, canny, 50, 150, 3 );//Canny is unessary we could use img_gE directly
+                findContours(canny.clone(), contours, hier, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-//                drawContours(img, contours, -1, Scalar( 0, 0, 255) );
+                drawContours(img, contours, -1, Scalar( 0, 0, 255) );
 
 //                dilate( img_gE, img_gD2, elementE );
 //                findSquares(img, squares);
