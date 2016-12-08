@@ -8,7 +8,8 @@
 #include "opencv2/highgui/highgui.hpp"
 
 #include<dirent.h>
-#include<string.h>
+#include <iostream>
+#include <string>
 #include <math.h>
 
 #include"nessFunctions.h"
@@ -22,54 +23,100 @@ using namespace std;
 int main(int argc, char** argv )
 {
     //Check Arguments
-    if ( argc != 3 )
+    if ( argc != 4 )
     {
-        printf("usage: ECE4951 <Image_Folder_Path> <Output_Folder_Path>\n");
+        printf("usage: ECE4951 <Mode>  <Source> <Output_Folder_Path>\n");
+        printf("Mode: 0 = from file, 1 = from camera\n");
+        printf("Source: input device number or directory with source photos\n");
+
+
         return -1;
     }
 
-    DIR *dir;
     cv::Mat img;
     std::vector<cv::Point> spots;
+    string outdirectory(argv[3]);
 
-    dir = opendir(argv[1]);
-    struct dirent *ent;
-    string indirectory(argv[1]);
-    string outdirectory(argv[2]);
-    if(dir != NULL){
-
-        //Loops Through and loads every image in the directory to img.
-        while ((ent = readdir (dir)) != NULL) {
-            string imgName(ent->d_name);
-            string imgPath(indirectory + imgName);
-            cout << imgPath << endl;
-            img = cv::imread(imgPath);
-            //Checks if there is valid image data
-            if ( !img.data )
-            {
-                printf("Not a valid image \n");
-            } else {
-                cout << "Image is " << img.rows << "x" << img.cols << endl;
-                spots = findOpenSpots(img , 1, 1, outdirectory, imgName);
-
-                cout << spots.size()  <<" Open Spots Found" << endl;
-                for(int i = 0; i < spots.size(); i++){
-
-                    circle(img, spots[i], 25, Scalar(255, 0, 0), -1);
-                    cout << "Spot: " << i << " x=" << spots[i].x  << " , y=" << spots[i].y  << endl;
-
-                }
-
-                
-
-            }
-        }
-        closedir (dir);
-    } else {
-        cout << "Could not find dir" << argv[1] << endl;
-    }
+    if(argv[1][0] == '0'){
+        DIR *dir;
+        dir = opendir(argv[2]);
+        struct dirent *ent;
+        string indirectory(argv[2]);
+        if(dir != NULL){
     
+            //Loops Through and loads every image in the directory to img.
+            while ((ent = readdir (dir)) != NULL) {
+                string imgName(ent->d_name);
+                string imgPath(indirectory + imgName);
+                cout << imgPath << endl;
+                img = cv::imread(imgPath);
+                //Checks if there is valid image data
+                if ( !img.data )
+                {
+                    printf("Not a valid image \n");
+                } else {
+                    cout << "Image is " << img.rows << "x" << img.cols << endl;
+                    spots = findOpenSpots(img , 0, 0, outdirectory, imgName);//The second and third params show and save steps
+    
+                    cout << spots.size()  <<" Open Spots Found" << endl;
+                    for(int i = 0; i < spots.size(); i++){
+    
+                        circle(img, spots[i], 5, Scalar(255, 0, 0), -1);
+                        cout << "Spot: " << i << " x=" << spots[i].x  << " , y=" << spots[i].y  << endl;
+     
+                    }
+    
+                    cv::namedWindow("Marked Spots", cv::WINDOW_NORMAL );
+                    cv::imshow("Marked Spots", img);
+                    cv::waitKey(0);
+                    
+    
+                }
+            }
+            
+            closedir (dir);
+        } else {
+            cout << "Could not find dir" << argv[2] << endl;
+        }
+    }
+
+    if(argv[1][0] == '1'){
+        int cam = argv[2][0] - '0';
+        VideoCapture cap(cam); // open the default camera
+        if(cap.isOpened()){
+    
+            //Loops Through and loads every image in the directory to img.
+            for(int i = 0; ;i++) {
+                string imgName = "cam.png";
+                cout << imgName << endl;
+                cap >> img;
+                //Checks if there is valid image data
+                if ( !img.data )
+                {
+                    printf("Not a valid image \n");
+                } else {
+                    cout << "Image is " << img.rows << "x" << img.cols << endl;
+                    spots = findOpenSpots(img , 0, 0, outdirectory, imgName);//The second and third params show and save steps
+    
+                    cout << spots.size()  <<" Open Spots Found" << endl;
+                    for(int i = 0; i < spots.size(); i++){
+    
+                        circle(img, spots[i], 5, Scalar(255, 0, 0), -1);
+                        cout << "Spot: " << i << " x=" << spots[i].x  << " , y=" << spots[i].y  << endl;
+     
+                    }
+    
+                    cv::namedWindow("Marked Spots", cv::WINDOW_NORMAL );
+                    cv::imshow("Marked Spots", img);
+                    cv::waitKey(0);
+                    
+    
+                }
+            }
+        } else {
+            cout << "Could not find video device" << argv[2] << endl;
+        }
+    }
 
     return 0;
 }
-
