@@ -12,6 +12,22 @@ static double angle( Point pt1, Point pt2, Point pt0 )
     return (dx1*dx2 + dy1*dy2)/sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
 }
 
+
+std::string to_string(int i)
+{
+	std::stringstream ss;
+	ss << i;
+	return ss.str();
+}
+
+double distance(int x1, int y1, int x2, int y2)
+{
+	//cout << "x1: " << x1 << " Y1: " << y1 << " x2: " << x2 << " y2: " << y2 <<endl;
+	//cout << "x1-x2 = " << x1-x2 << " squared = << " << pow(x1-x2,2) <<endl; 
+	// cout << "I am going to return " << sqrt( pow(x1-x2,2) + pow(y1-y2,2) ) << endl;
+	return sqrt( pow(x1-x2,2) + pow(y1-y2,2) );
+}
+
 // returns sequence of squares detected on the image.
 // the sequence is stored in the specified memory storage
 static void findSquares( const Mat& image, vector<vector<Point> >& squares )
