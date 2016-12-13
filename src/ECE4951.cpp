@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include <wiringSerial.h>
 
 #include"nessFunctions.h"
 #include"spotExtractor.h"
@@ -44,8 +45,11 @@ int main(int argc, char** argv )
     std::vector<cv::Point> empty_lot_spots;// all spots of original empty image
     string outdirectory(argv[3]);//directory for output images
    
-       
+    char message[15] = " \0";
+    int rec = 0;
+    int handle;
     
+    handle = serialOpen("/dev/ttyS0", 9600);  
 	
     if(argv[1][0] == '0'){ // if input 0 for finding images instead of using camera
         DIR *dir;
@@ -53,6 +57,7 @@ int main(int argc, char** argv )
         struct dirent *ent;
         string indirectory(argv[2]);
         int empty_lot_scan=0;//Flag indicating first photo, which is an empty parking lot. 
+        int pic_num=0;
         if(dir != NULL){// if the directory has stuff in it
     
             //Loops Through and loads every image in the directory to img.
@@ -68,16 +73,16 @@ int main(int argc, char** argv )
 				if(empty_lot_scan==0)//if first image, meaning empty parking lot image. 
 				{
 					string imgName(argv[4]);// set imageName to predefined input from user
-					cout << "Empty Parking Lot Image: " << imgName << endl;
+					//cout << "Empty Parking Lot Image: " << imgName << endl;
 					string imgPath(indirectory + imgName);
-					cout << imgPath << endl;
+					//cout << imgPath << endl;
 					img = cv::imread(imgPath);
 					orig_img = cv::imread(imgPath);
 				}else{
 					string imgName(ent->d_name);// random image from directory
-					cout << imgName << endl;
+					//cout << imgName << endl;
 					string imgPath(indirectory + imgName);
-					cout << imgPath << endl;
+					//cout << imgPath << endl;
 					img = cv::imread(imgPath);
 				}	
 					
@@ -90,7 +95,7 @@ int main(int argc, char** argv )
 					}
 					else 
 					{
-						cout << "Image is " << img.rows << "x" << img.cols << endl;
+						//cout << "Image is " << img.rows << "x" << img.cols << endl;
 						spots = findOpenSpots(img , 0, 0, outdirectory, imgName);//The second and third params show and save steps
 						
 						
@@ -98,9 +103,9 @@ int main(int argc, char** argv )
 						{
 							
 							empty_lot_spots=spots;//copy spots into empty lot spots
-							empty_lot_scan=1;//set empty scan flag
 							
-							cout << empty_lot_spots.size()  <<" Open Spots Found in Empty Lot" << endl;
+							
+							cout << endl<<endl <<empty_lot_spots.size()  <<" Open Spots Found in Empty Lot" << endl;
 							
 							for(int i = 0; i < empty_lot_spots.size(); i++){
 								string out_str= to_string(i);//turn i into a string to pass into putText function
@@ -112,6 +117,7 @@ int main(int argc, char** argv )
 														
 							cv::namedWindow("Empty Lot Spots", cv::WINDOW_NORMAL );
 							cv::imshow("Empty Lot Spots", orig_img);
+							cv::imwrite(outdirectory + "/Empty_Lot_Output.jpg", orig_img);
 						}
 						else//if not empty lot, need to find available spots
 						{
@@ -154,18 +160,37 @@ int main(int argc, char** argv )
 							if(best_spot_number == -1) // if no spots were found
 							{
 								cout << "No parking spots were found" <<endl;
-							}
-							else{
+							}else{
 								cout << "The closest parking spot is spot # " << best_spot_number << endl << endl;
 								circle(img, empty_lot_spots[best_spot_number], 6, Scalar(0, 0, 255), -1);
 								//draw a nice circle aroudn that boi
 							}
-							
-							cv::namedWindow("Marked Spots", cv::WINDOW_NORMAL );
+							message[0] = ' '+best_spot_number;
+    						cv::namedWindow("Marked Spots", cv::WINDOW_NORMAL );
 							cv::imshow("Marked Spots", img);
+							
+							//cout << "OutputImageDirectory: " << outdirectory + "Spot_Output_Img_"  +  to_string(pic_num) + ".png" << endl;
+							
+							cv::imwrite(outdirectory + "/Spot_Output_Img_"  +  to_string(pic_num) + ".png", img);
+							pic_num++;
+							
 						}
-						
-						cv::waitKey(0);    
+	
+						//rec = 0;
+						//rec = serialGetchar (handle);					
+                        //while(rec != 'c');
+						 // { cout <<  "Wrong Char: " << rec << endl;
+						 //   rec= serialGetchar (handle) ;
+						 // }
+						 
+						 if(empty_lot_scan != 0)//if not full lot
+						{
+						   serialPuts(handle, message);
+						   //cout << "Sent Spot" <<  best_spot_number  << endl; 
+						   cv::waitKey(0);  
+					   }else{
+						   empty_lot_scan=1;//set empty scan flag
+					   }
 					}
             }
             
@@ -218,10 +243,9 @@ int main(int argc, char** argv )
 
 
 
+std::string to_string(int i){
 
-std::string to_string(int i)
-{
-	std::stringstream ss;
+        std::stringstream ss;
 	ss << i;
 	return ss.str();
 }

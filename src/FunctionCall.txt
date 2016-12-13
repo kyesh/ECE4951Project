@@ -1,0 +1,1 @@
+sudo ./ECE4951 0 /home/pi/Documents/ECE4951/gitstuff/ECE4951Project/TestPhotos/FromPi/ /home/pi/Documents/ECE4951/gitstuff/ECE4951Project/TestPhotos/OutputPhotos/ parkingLotImage1.jpg
